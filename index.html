@@ -660,6 +660,22 @@
                                 </div>
                             </div>
 
+                            <div class="form-group">
+                                <label for="avgOrderValue">
+                                    Average Transaction Value ($)
+                                    <span style="font-size: 14px; color: var(--text-muted); font-weight: normal; display: block; margin-top: 4px;">
+                                        Auto-calculated based on your platforms (you can edit this)
+                                    </span>
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="avgOrderValue" 
+                                    placeholder="Auto-calculated"
+                                    min="0"
+                                    step="0.01"
+                                >
+                            </div>
+
                             <button type="submit" class="cta-button">Find My Freedom Number</button>
                         </form>
                     </div>
@@ -1092,6 +1108,23 @@
             return Math.round(sum / values.length);
         }
 
+        // Update the average transaction input field based on selected platforms
+        function updateAverageTransaction() {
+            const avgOrderValueInput = document.getElementById('avgOrderValue');
+            if (!avgOrderValueInput) return;
+            
+            // Only update if user hasn't manually edited it
+            // Check if the current value matches a calculated value (user hasn't changed it)
+            const selectedPlatforms = getSelectedPlatforms();
+            const calculatedValue = calculateAverageTransaction(selectedPlatforms);
+            
+            // If field is empty or matches a previous calculated value, update it
+            const currentValue = parseFloat(avgOrderValueInput.value);
+            if (!avgOrderValueInput.value || currentValue === calculatedValue || isNaN(currentValue)) {
+                avgOrderValueInput.value = calculatedValue;
+            }
+        }
+
         // Initialize calculator when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             initializeCalculator();
@@ -1153,8 +1186,22 @@
             let totalAnnualFees = 0;
             const feeBreakdown = [];
             
-            // Automatically calculate average transaction value based on selected platforms
-            const avgOrderValue = calculateAverageTransaction(platforms);
+            // Get average transaction value - use user input if provided, otherwise auto-calculate
+            const avgOrderValueInput = document.getElementById('avgOrderValue');
+            let avgOrderValue;
+            
+            if (avgOrderValueInput && avgOrderValueInput.value && parseFloat(avgOrderValueInput.value) > 0) {
+                // User has entered a value, use it
+                avgOrderValue = parseFloat(avgOrderValueInput.value);
+            } else {
+                // Auto-calculate based on selected platforms
+                avgOrderValue = calculateAverageTransaction(platforms);
+                // Update the input field with the calculated value
+                if (avgOrderValueInput) {
+                    avgOrderValueInput.value = Math.round(avgOrderValue);
+                }
+            }
+            
             const estimatedTransactions = revenue / avgOrderValue;
 
             platforms.forEach(platform => {
@@ -1693,8 +1740,14 @@
                     // Show/hide tier selector when checkbox is toggled
                     checkbox.addEventListener('change', function() {
                         tierSelect.style.display = this.checked ? 'block' : 'none';
+                        updateAverageTransaction();
                     });
                 }
+
+                // Update average transaction when platform is selected/deselected
+                checkbox.addEventListener('change', function() {
+                    updateAverageTransaction();
+                });
 
                 platformGrid.appendChild(optionDiv);
             });
