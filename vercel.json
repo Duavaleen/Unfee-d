@@ -1,24 +1,12 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/subscribe",
-      "dest": "/api/subscribe.js"
+      "source": "/api/subscribe",
+      "destination": "/api/subscribe.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  ],
-  "functions": {
-    "api/subscribe.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  ]
 }
